@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PlayersModule } from './modules/players/players.module';
+import { CategoriesModule } from './modules/categories/categories.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -18,7 +19,8 @@ import { PlayersModule } from './modules/players/players.module';
         useFindAndModify: false,
       }),
     }),
-    PlayersModule
+    PlayersModule,
+    CategoriesModule
   ],
   controllers: [AppController],
   providers: [AppService],
