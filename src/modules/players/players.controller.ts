@@ -10,26 +10,26 @@ export class PlayersController {
   }
 
   @Get()
-  findPlayers(@Query('email') email: string): Player | Player[] {
+  async findPlayers(@Query('email') email: string): Promise<Player | Player[]> {
     if (email) {
-      return this.service.findPlayerByEmail(email)
+      return await this.service.findPlayerByEmail(email)
     } else {
-      return this.service.findPlayers()
+      return await this.service.findPlayers()
     }
   }
 
   @Post()
-  createPlayer(@Body() createPlayerDto: CreatePlayerDto): Player {
-    return this.service.createPlayer(createPlayerDto)
+  async createPlayer(@Body() createPlayerDto: CreatePlayerDto): Promise<Player> {
+    return await this.service.createPlayer(createPlayerDto)
   }
 
   @Put(':id')
-  updatePlayer(@Param() params: any, @Body() updatePlayerDto: UpdatePlayerDto): void {
-    return this.service.updatePlayer(params.id, updatePlayerDto)
+  async updatePlayer(@Param() params: any, @Body() updatePlayerDto: UpdatePlayerDto): Promise<Player> {
+    return await this.service.updatePlayer(params.id, updatePlayerDto)
   }
 
   @Delete(':id')
-  deletePlayer(@Param() params: any): void {
-    return this.service.deletePlayer(params.id)
+  async deletePlayer(@Param() params: any): Promise<void> {
+    await this.service.deletePlayer(params.id)
   }
 }

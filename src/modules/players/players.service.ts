@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreatePlayerDto } from './dtos/create-player.dto';
 import { Player } from './interfaces/player.interface';
 
-import * as uuid from 'uuid'
 import { UpdatePlayerDto } from './dtos/update-player.dto';
 
 @Injectable()
@@ -10,61 +11,30 @@ export class PlayersService {
   private readonly logger = new Logger(PlayersService.name)
   private readonly players: Player[] = []
 
-  findPlayers(): Player[] {
-    return this.players
+  constructor(@InjectModel('Player') private readonly playerModel: Model<Player>) {
+
   }
 
-  findPlayerByEmail(email: string): Player {
-    return this.players.find(x => x.email === email)
+  async findPlayers(): Promise<Player[]> {
+    return this.playerModel.find().exec()
   }
 
-  createPlayer(createPlayerDto: CreatePlayerDto): Player {
+  async findPlayerByEmail(email: string): Promise<Player> {
+    return await this.playerModel.findOne({ email }).exec()
+  }
+
+  async createPlayer(createPlayerDto: CreatePlayerDto): Promise<Player> {
     this.logger.log(`Criando jogador => ${JSON.stringify(createPlayerDto)}`)
-
-    const { name, email, phone } = createPlayerDto
-    const player: Player = {
-      _id: uuid.v4(),
-      name,
-      email,
-      phone,
-      photo: null,
-      position: null,
-      ranking: null
-    }
-
-    this.players.push(player)
-
-    return player
+    return await new this.playerModel(createPlayerDto).save()
   }
 
-  updatePlayer(id: string, updatePlayerDto: UpdatePlayerDto): void {
+  async updatePlayer(id: string, updatePlayerDto: UpdatePlayerDto): Promise<Player> {
     this.logger.log(`Atualizando jogador => ${JSON.stringify(updatePlayerDto)}`)
-
-    const { name, email, phone, photo } = updatePlayerDto
-    const index = this.players.findIndex(x => x._id === id)
-
-    if (index === -1) {
-      return
-    }
-
-    const player = this.players[index]
-
-    this.players[index] = {
-      ...player,
-      name,
-      email,
-      phone,
-      photo,
-    }
+    return await this.playerModel.findByIdAndUpdate(id, updatePlayerDto).exec()
   }
 
-  deletePlayer(id: string): void {
-    const index = this.players.findIndex(x => x._id === id)
-
-    if (index === -1) {
-      return
-    }
-
-    this.players.splice(index, 1)
+  async deletePlayer(id: string): Promise<void> {
+    this.logger.log(`Removendo jogador => ${id}`)
+    await this.playerModel.findByIdAndRemove(id).exec()
   }
 }
