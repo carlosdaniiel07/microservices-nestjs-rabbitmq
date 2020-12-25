@@ -1,22 +1,22 @@
 import { Type } from "class-transformer";
-import { ArrayNotEmpty, IsIn, IsNotEmpty, IsNumber, IsString, Min, ValidateNested } from "class-validator";
+import { IsOptional, IsString, IsNotEmpty, IsIn, IsNumber, Min, ArrayNotEmpty, ValidateNested } from "class-validator";
 
-export class CreateCategoryDto {
+export class UpdateCategoryDto {
   @IsString()
-  @IsNotEmpty()
-  name: string
-
-  @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   description: string
 
   @ArrayNotEmpty()
   @ValidateNested({ each: true })
-  @Type(() => CreateEventDto)
-  events: CreateEventDto[]
+  @Type(() => UpdateEventDto)
+  events: UpdateEventDto[]
 }
 
-class CreateEventDto {
+class UpdateEventDto {
+  @IsString()
+  @IsNotEmpty()
+  _id: string
+
   @IsString()
   @IsNotEmpty()
   name: string

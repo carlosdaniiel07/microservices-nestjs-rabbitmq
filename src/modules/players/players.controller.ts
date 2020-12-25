@@ -13,27 +13,27 @@ export class PlayersController {
 
   @Get()
   async findPlayers(): Promise<Player[]> {
-    return await this.service.findPlayers()
+    return await this.service.findAll()
   }
 
   @Get(':id')
   async findPlayerById(@Param('id', PlayersValidationParamsPipe) id: string): Promise<Player> {
-    return await this.service.findPlayerById(id)
+    return await this.service.findById(id)
   }
 
   @Post()
   @UsePipes(ValidationPipe)
   async createPlayer(@Body() createPlayerDto: CreatePlayerDto): Promise<Player> {
-    return await this.service.createPlayer(createPlayerDto)
+    return await this.service.save(createPlayerDto)
   }
 
   @Put(':id')
   async updatePlayer(@Param('id', PlayersValidationParamsPipe) id: string, @Body() updatePlayerDto: UpdatePlayerDto): Promise<void> {
-    await this.service.updatePlayer(id, updatePlayerDto)
+    await this.service.update(id, updatePlayerDto)
   }
 
   @Delete(':id')
   async deletePlayer(@Param('id', PlayersValidationParamsPipe) id: string): Promise<void> {
-    await this.service.deletePlayer(id)
+    await this.service.delete(id)
   }
 }

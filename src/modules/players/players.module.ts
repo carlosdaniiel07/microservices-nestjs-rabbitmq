@@ -12,6 +12,6 @@ import { PlayersService } from './players.service';
       { name: 'Player', schema: PlayerSchema },
     ])
   ],
-  exports: [],
+  exports: [PlayersService],
 })
 export class PlayersModule {}

@@ -14,11 +14,11 @@ export class PlayersService {
 
   }
 
-  async findPlayers(): Promise<Player[]> {
+  async findAll(): Promise<Player[]> {
     return this.playerModel.find().exec()
   }
 
-  async findPlayerByEmail(email: string): Promise<Player> {
+  async findByEmail(email: string): Promise<Player> {
     const player = await this.playerModel.findOne({ email }).exec()
 
     if (!player) {
@@ -28,7 +28,7 @@ export class PlayersService {
     return player
   }
 
-  async findPlayerById(id: string): Promise<Player> {
+  async findById(id: string): Promise<Player> {
     const player = await this.playerModel.findById(id).exec()
 
     if (!player) {
@@ -38,10 +38,10 @@ export class PlayersService {
     return player
   }
 
-  async createPlayer(createPlayerDto: CreatePlayerDto): Promise<Player> {
+  async save(createPlayerDto: CreatePlayerDto): Promise<Player> {
     this.logger.log(`Criando jogador => ${JSON.stringify(createPlayerDto)}`)
     
-    const exists = (await this.playerModel.count({ email: createPlayerDto.email }) as number) > 0
+    const exists = (await this.playerModel.countDocuments({ email: createPlayerDto.email }) as number) > 0
 
     if (exists) {
       throw new BadRequestException(`Já existe um jogador com o e-mail ${createPlayerDto.email}`)
@@ -50,27 +50,24 @@ export class PlayersService {
     return await new this.playerModel(createPlayerDto).save()
   }
 
-  async updatePlayer(id: string, updatePlayerDto: UpdatePlayerDto): Promise<void> {
+  async update(id: string, updatePlayerDto: UpdatePlayerDto): Promise<void> {
     this.logger.log(`Atualizando jogador => ${JSON.stringify(updatePlayerDto)}`)
     
-    const exists = (await this.playerModel.count({ _id: { $ne: id }, email: updatePlayerDto.email }) as number) > 0
+    await this.findById(id)
+    
+    const exists = (await this.playerModel.countDocuments({ _id: { $ne: id }, email: updatePlayerDto.email }) as number) > 0
 
     if (exists) {
       throw new BadRequestException(`Já existe um jogador com o e-mail ${updatePlayerDto.email}`)
     }
     
-    await this.playerModel.findByIdAndUpdate(id, updatePlayerDto).exec()
+    await this.playerModel.updateOne({ _id: id }, updatePlayerDto).exec()
   }
 
-  async deletePlayer(id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     this.logger.log(`Removendo jogador => ${id}`)
     
-    const exists = (await this.playerModel.count({ _id: id }) as number) > 0
-
-    if (!exists) {
-      throw new NotFoundException('Jogador não encontrado')
-    }
-    
-    await this.playerModel.findByIdAndRemove(id).exec()
+    await this.findById(id)
+    await this.playerModel.remove({ _id: id })
   }
 }
