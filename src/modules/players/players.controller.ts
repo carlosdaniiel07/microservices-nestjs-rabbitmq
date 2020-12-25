@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Query, UsePipes, Valid
 import { CreatePlayerDto } from './dtos/create-player.dto';
 import { UpdatePlayerDto } from './dtos/update-player.dto';
 import { Player } from './interfaces/player.interface';
-import { PlayersValidationParamsPipe } from './pipes/players-validation-params.pipe';
+import { ParamsValidationPipe } from '../../common/pipes/params-validation.pipe';
 import { PlayersService } from './players.service';
 
 @Controller('api/v1/players')
@@ -17,7 +17,7 @@ export class PlayersController {
   }
 
   @Get(':id')
-  async findPlayerById(@Param('id', PlayersValidationParamsPipe) id: string): Promise<Player> {
+  async findPlayerById(@Param('id', ParamsValidationPipe) id: string): Promise<Player> {
     return await this.service.findById(id)
   }
 
@@ -28,12 +28,12 @@ export class PlayersController {
   }
 
   @Put(':id')
-  async updatePlayer(@Param('id', PlayersValidationParamsPipe) id: string, @Body() updatePlayerDto: UpdatePlayerDto): Promise<void> {
+  async updatePlayer(@Param('id', ParamsValidationPipe) id: string, @Body() updatePlayerDto: UpdatePlayerDto): Promise<void> {
     await this.service.update(id, updatePlayerDto)
   }
 
   @Delete(':id')
-  async deletePlayer(@Param('id', PlayersValidationParamsPipe) id: string): Promise<void> {
+  async deletePlayer(@Param('id', ParamsValidationPipe) id: string): Promise<void> {
     await this.service.delete(id)
   }
 }
