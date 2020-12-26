@@ -2,7 +2,7 @@ import { Schema } from "mongoose";
 
 export const MatchSchema = new Schema({
   date: Date,
-  challenger: { type: Schema.Types.ObjectId, ref: 'Player' },
+  winner: { type: Schema.Types.ObjectId, ref: 'Player' },
   results: [
     { set: String }
   ],
@@ -11,5 +11,5 @@ export const MatchSchema = new Schema({
   ],
 }, {
   timestamps: true,
-  collection: 'Matches'
+  collection: 'matches'
 })

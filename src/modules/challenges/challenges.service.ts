@@ -5,10 +5,12 @@ import { CategoriesService } from '../categories/categories.service';
 import { Category } from '../categories/interface/category.interface';
 import { Player } from '../players/interfaces/player.interface';
 import { PlayersService } from '../players/players.service';
+import { AssignChallengeMatchDto } from './dtos/assign-challenge-match.dto';
 import { CreateChallengeDto } from './dtos/create-challenge.dto';
 import { UpdateChallengeDto } from './dtos/update-challenge.dto';
 import { ChallengeStatus } from './enums/challenge-status.enum';
 import { Challenge } from './interfaces/challenge.interface';
+import { Match } from './interfaces/match.interface';
 
 @Injectable()
 export class ChallengesService {
@@ -16,6 +18,7 @@ export class ChallengesService {
 
   constructor(
     @InjectModel('Challenge') private readonly challengeModel: Model<Challenge>,
+    @InjectModel('Match') private readonly matchModel: Model<Match>,
     private readonly playersService: PlayersService,
     private readonly categoriesService: CategoriesService,
     ) {}
@@ -30,7 +33,7 @@ export class ChallengesService {
   }
   
   async findById(id: string): Promise<Challenge> {
-    const challenge = await this.challengeModel.findById(id)
+    const challenge = await this.challengeModel.findById(id).populate('players')
 
     if (!challenge) {
       throw new NotFoundException('Desafio não encontrado')
@@ -102,5 +105,31 @@ export class ChallengesService {
     }
 
     await this.challengeModel.updateOne({ _id: id }, updateChallengeDto)
+  }
+
+  async assignMatch(challengeId: string, assignChallengeMatchDto: AssignChallengeMatchDto): Promise<void> {
+    const { date, winner, results } = assignChallengeMatchDto
+    
+    const challenge = await this.findById(challengeId)
+
+    if (challenge.match) {
+      throw new BadRequestException('Uma partida já foi vinculada a este desafio')
+    }
+    
+    if (!challenge.players.map(({ id }) => id).includes(winner._id)) {
+      throw new BadRequestException('Este jogador não faz parte do desafio')
+    }
+
+    const match = await new this.matchModel({
+      date,
+      winner,
+      results,
+      players: challenge.players,
+    }).save()
+
+    await this.challengeModel.updateOne({ _id: challengeId }, {
+      status: ChallengeStatus.FINISHED,
+      match,
+    })
   }
 }

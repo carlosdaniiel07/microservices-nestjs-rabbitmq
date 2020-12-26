@@ -4,7 +4,7 @@ import { MatchResult } from "./match-result.interface";
 
 export interface Match extends Document {
   date: Date
-  challenger: Player
+  winner: Player
   results: MatchResult[]
   players: Player[]
 }
