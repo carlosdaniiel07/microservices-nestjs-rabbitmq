@@ -121,6 +121,7 @@ export class ChallengesService {
     }
 
     const match = await new this.matchModel({
+      category: challenge.category,
       date,
       winner,
       results,
