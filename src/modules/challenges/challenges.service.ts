@@ -6,6 +6,7 @@ import { Category } from '../categories/interface/category.interface';
 import { Player } from '../players/interfaces/player.interface';
 import { PlayersService } from '../players/players.service';
 import { CreateChallengeDto } from './dtos/create-challenge.dto';
+import { UpdateChallengeDto } from './dtos/update-challenge.dto';
 import { ChallengeStatus } from './enums/challenge-status.enum';
 import { Challenge } from './interfaces/challenge.interface';
 
@@ -20,9 +21,14 @@ export class ChallengesService {
     ) {}
 
   async findAll(): Promise<Challenge[]> {
-    return await this.challengeModel.find()
+    return await this.challengeModel.find().populate('players')
   }
 
+  async findByRequester(id: string): Promise<Challenge[]> {
+    const player = await this.playersService.findById(id)
+    return await this.challengeModel.find({ requester: player }).populate('players')    
+  }
+  
   async findById(id: string): Promise<Challenge> {
     const challenge = await this.challengeModel.findById(id)
 
@@ -75,14 +81,26 @@ export class ChallengesService {
       date: createChallengeDto.date,
       status: ChallengeStatus.PENDING,
       requestDate: new Date(),
-      responseDate: null,
       requester,
       players,
-      match: null,
     }).save()
 
     this.logger.log('Desafio criado com sucesso!')
 
     return createdChallenge
+  }
+
+  async update(id: string, updateChallengeDto: UpdateChallengeDto): Promise<void> {
+    const challenge = await this.findById(id)
+
+    if (challenge.status === ChallengeStatus.FINISHED) {
+      throw new BadRequestException('Este desafio já foi finalizado e não pode ser alterado')
+    }
+
+    if (![ChallengeStatus.ACCEPTED, ChallengeStatus.REJECTED, ChallengeStatus.CANCELLED].includes(updateChallengeDto.status)) {
+      throw new BadRequestException('O desafio não pode ser alterado para este status')
+    }
+
+    await this.challengeModel.updateOne({ _id: id }, updateChallengeDto)
   }
 }
