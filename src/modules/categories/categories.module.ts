@@ -13,6 +13,7 @@ import { CategorySchema } from './interface/category.shema';
       { name: 'Category', schema: CategorySchema }
     ]),
     PlayersModule,
-  ]
+  ],
+  exports: [CategoriesService]
 })
 export class CategoriesModule { }

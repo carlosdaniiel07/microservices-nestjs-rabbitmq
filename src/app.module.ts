@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PlayersModule } from './modules/players/players.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { ChallengesModule } from './modules/challenges/challenges.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -20,7 +21,8 @@ import { CategoriesModule } from './modules/categories/categories.module';
       }),
     }),
     PlayersModule,
-    CategoriesModule
+    CategoriesModule,
+    ChallengesModule
   ],
   controllers: [AppController],
   providers: [AppService],

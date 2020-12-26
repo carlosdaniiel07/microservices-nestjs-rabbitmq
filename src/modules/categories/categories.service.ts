@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Player } from '../players/interfaces/player.interface';
 import { PlayersService } from '../players/players.service';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
@@ -27,6 +28,10 @@ export class CategoriesService {
     }
 
     return category
+  }
+
+  async findByPlayer(player: Player): Promise<Category> {
+    return await this.categoryModel.findOne({ players: { $in: [player] } })
   }
 
   async save(createCategoryDto: CreateCategoryDto): Promise<Category> {
