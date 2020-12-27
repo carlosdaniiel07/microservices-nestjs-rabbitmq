@@ -15,12 +15,12 @@ export class AppController {
   ) {}
 
   @MessagePattern('find-all-categories')
-  async findAllCategories(): Promise<Category[]> {
+  async handleFindAllCategories(): Promise<Category[]> {
     return await this.categoriesService.findAll()
   }
 
   @MessagePattern('find-category-by-id')
-  async findCategoryById(@Payload() id: string): Promise<Category> {
+  async handleFindCategoryById(@Payload() id: string): Promise<Category> {
     return await this.categoriesService.findById(id)
   }
 
