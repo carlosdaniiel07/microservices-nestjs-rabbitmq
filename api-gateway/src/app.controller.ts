@@ -1,5 +1,6 @@
-import { Body, Controller, Logger, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
+import { Observable } from 'rxjs';
 import { CreateCategoryDto } from './dtos/categories/create-category.dto';
 
 @Controller('api/v1')
@@ -16,9 +17,19 @@ export class AppController {
     })
   }
 
+  @Get('categories')
+  findCategories(): Observable<any[]> {
+    return this.adminMicroservice.send('find-all-categories', '')
+  }
+
+  @Get('categories/:id')
+  findCategoryById(@Param('id') id: string): Observable<any> {
+    return this.adminMicroservice.send('find-category-by-id', id)
+  }
+
   @Post('categories')
   @UsePipes(ValidationPipe)
-  async saveCategory(@Body() createCategoryDto: CreateCategoryDto): Promise<any> {
-    return this.adminMicroservice.emit('create-category', createCategoryDto)
+  saveCategory(@Body() createCategoryDto: CreateCategoryDto): void {
+    this.adminMicroservice.emit('create-category', createCategoryDto)
   }
 }
