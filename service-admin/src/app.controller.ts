@@ -1,5 +1,5 @@
 import { Controller, Logger } from '@nestjs/common';
-import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
+import { Ctx, EventPattern, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
 import { CreateCategoryDto } from './dtos/categories/create-category.dto';
 import { Category } from './interfaces/categories/category.interface';
 import { CategoriesService } from './services/categories.service';
@@ -15,17 +15,26 @@ export class AppController {
   ) {}
 
   @MessagePattern('find-all-categories')
-  async handleFindAllCategories(): Promise<Category[]> {
+  async handleFindAllCategories(@Ctx() context: RmqContext): Promise<Category[]> {
+    const channel = context.getChannelRef()
+
+    await channel.ack(context.getMessage())
     return await this.categoriesService.findAll()
   }
 
   @MessagePattern('find-category-by-id')
-  async handleFindCategoryById(@Payload() id: string): Promise<Category> {
+  async handleFindCategoryById(@Payload() id: string, @Ctx() context: RmqContext): Promise<Category> {
+    const channel = context.getChannelRef()
+
+    await channel.ack(context.getMessage())
     return await this.categoriesService.findById(id)
   }
 
   @EventPattern('create-category')
-  async handleCreateCategory(@Payload() createCategoryDto: CreateCategoryDto): Promise<void> {
+  async handleCreateCategory(@Payload() createCategoryDto: CreateCategoryDto, @Ctx() context: RmqContext): Promise<void> {
+    const channel = context.getChannelRef()
+
     await this.categoriesService.save(createCategoryDto)
+    await channel.ack(context.getMessage())
   }
 }
