@@ -2,7 +2,10 @@ import { Controller, Logger } from '@nestjs/common';
 import { Ctx, EventPattern, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
 import { CreateCategoryDto } from './dtos/categories/create-category.dto';
 import { UpdateCategoryDto } from './dtos/categories/update-category.dto';
+import { CreatePlayerDto } from './dtos/players/create-player.dto';
+import { UpdatePlayerDto } from './dtos/players/update-player.dto';
 import { Category } from './interfaces/categories/category.interface';
+import { Player } from './interfaces/players/player.interface';
 import { CategoriesService } from './services/categories.service';
 import { PlayersService } from './services/players.service';
 
@@ -42,6 +45,36 @@ export class AppController {
   @EventPattern('add-player-to-category')
   async handleAddPlayerToCategory(@Payload() payload: { id: string, playerId: string }, @Ctx() context: RmqContext): Promise<void> {
     await this.categoriesService.addPlayer(payload.id, payload.playerId)
+    await this.ackMessage(context)
+  }
+
+  @MessagePattern('find-all-players')
+  async handleFindAllPlayers(@Ctx() context: RmqContext): Promise<Player[]> {
+    await this.ackMessage(context)
+    return await this.playersService.findAll()
+  }
+
+  @MessagePattern('find-player-by-id')
+  async handleFindPlayerById(@Payload() id: string, @Ctx() context: RmqContext): Promise<Player> {
+    await this.ackMessage(context)
+    return await this.playersService.findById(id)
+  }
+
+  @EventPattern('create-player')
+  async handleCreatePlayer(@Payload() createPlayerDto: CreatePlayerDto, @Ctx() context: RmqContext): Promise<void> {
+    await this.playersService.save(createPlayerDto)
+    await this.ackMessage(context)
+  }
+
+  @EventPattern('update-player')
+  async handleUpdatePlayer(@Payload() payload: { id: string, data: UpdatePlayerDto }, @Ctx() context: RmqContext): Promise<void> {
+    await this.playersService.update(payload.id, payload.data)
+    await this.ackMessage(context)
+  }
+
+  @EventPattern('delete-player')
+  async handleDeletePlayer(@Payload() id: string, @Ctx() context: RmqContext): Promise<void> {
+    await this.playersService.delete(id)
     await this.ackMessage(context)
   }
 
