@@ -3,16 +3,16 @@ import { IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator"
 export class UpdatePlayerDto {
   @IsString()
   @IsNotEmpty()
-  name: string
+  name?: string
   
   @IsEmail()
-  email: string
+  email?: string
   
   @IsString()
   @IsOptional()
-  phone: string
+  phone?: string
   
   @IsString()
   @IsOptional()
-  photo: string
+  photo?: string
 }
