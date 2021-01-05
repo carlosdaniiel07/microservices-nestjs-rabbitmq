@@ -11,7 +11,7 @@ export class StorageService {
   }
 
   public async uploadFile(file: any, userId: string): Promise<string> {
-    const s3 = new AWS.S3({ region: 'us-east-2' })
+    const s3 = new AWS.S3({ region: this.configService.get<string>('AWS_S3_BUCKET_REGION') })
 
     const fileExtension = file.originalname.split('.')[1]
     const fileKey = `${userId}_${Date.now()}.${fileExtension}`
