@@ -1,6 +1,6 @@
 import { Type } from "class-transformer";
 import { ArrayNotEmpty, IsDateString, IsNotEmpty, IsNotEmptyObject, ValidateNested } from "class-validator";
-import { Player } from "src/modules/players/interfaces/player.interface";
+import { Player } from "../../interfaces/players/player.interface";
 
 export class AssignChallengeMatchDto {
   @IsDateString()

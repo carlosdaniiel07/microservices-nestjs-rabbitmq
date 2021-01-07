@@ -1,5 +1,5 @@
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsDateString, IsNotEmptyObject } from "class-validator";
-import { Player } from "src/modules/players/interfaces/player.interface";
+import { Player } from "../../interfaces/players/player.interface";
 
 export class CreateChallengeDto {
   @IsDateString()
