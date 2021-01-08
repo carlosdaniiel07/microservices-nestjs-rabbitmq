@@ -3,12 +3,15 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Observable } from 'rxjs';
 import { CreateCategoryDto } from './dtos/categories/create-category.dto';
 import { UpdateCategoryDto } from './dtos/categories/update-category.dto';
+import { AssignChallengeMatchDto } from './dtos/challenges/assign-challenge-match.dto';
 import { CreateChallengeDto } from './dtos/challenges/create-challenge.dto';
+import { UpdateChallengeDto } from './dtos/challenges/update-challenge.dto';
 import { CreatePlayerDto } from './dtos/players/create-player.dto';
 import { UpdatePlayerDto } from './dtos/players/update-player.dto';
 import { ProxyService } from './modules/proxy/proxy.service';
 import { StorageService } from './modules/storage/storage.service';
 import { MongoIdValidationPipe } from './pipes/pipes/mongo-id-validation.pipe';
+import { ParamsValidationPipe } from './pipes/pipes/params-validation.pipe';
 
 @Controller('api/v1')
 export class AppController {
@@ -105,5 +108,17 @@ export class AppController {
   @UsePipes(ValidationPipe)
   createChallenge(@Body() createChallengeDto: CreateChallengeDto): void {
     this.proxyService.challengeMicroservice.emit('create-challenge', createChallengeDto)
+  }
+
+  @Put('challenges/:id')
+  @UsePipes(ValidationPipe)
+  updateChallenge(@Param('id', MongoIdValidationPipe) id: string, @Body() updateChallengeDto: UpdateChallengeDto): void {
+    this.proxyService.challengeMicroservice.emit('update-challenge', { id, data: updateChallengeDto })
+  }
+
+  @Post('challenges/:id/match')
+  @UsePipes(ValidationPipe)
+  assignMatch(@Param('id', MongoIdValidationPipe) id: string, @Body() assignChallengeMatchDto: AssignChallengeMatchDto): void {
+    this.proxyService.challengeMicroservice.emit('assign-match-to-challenge', { id, data: assignChallengeMatchDto })
   }
 }

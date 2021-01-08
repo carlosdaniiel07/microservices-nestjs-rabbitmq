@@ -10,7 +10,7 @@ export const ChallengeSchema = new Schema({
   players: [
     { type: Schema.Types.ObjectId }
   ],
-  match: { type: Schema.Types.ObjectId }
+  match: { type: Schema.Types.ObjectId, ref: 'Match' }
 }, {
   timestamps: true,
   collection: 'challenges'

@@ -23,16 +23,16 @@ export class ChallengesService {
     ) {}
 
   async findAll(): Promise<Challenge[]> {
-    return await this.challengeModel.find().populate('players')
+    return await this.challengeModel.find().populate('match')
   }
 
   async findByRequester(id: string): Promise<Challenge[]> {
     const player = await this.proxyService.adminMicroservice.send<Player>('find-player-by-id', id).toPromise()
-    return await this.challengeModel.find({ requester: player }).populate('players')    
+    return await this.challengeModel.find({ requester: player }).populate('match')
   }
   
   async findById(id: string): Promise<Challenge> {
-    const challenge = await this.challengeModel.findById(id).populate('players')
+    const challenge = await this.challengeModel.findById(id).populate('match')
 
     if (!challenge) {
       throw new RpcException('Desafio não encontrado')
@@ -109,6 +109,8 @@ export class ChallengesService {
   }
 
   async assignMatch(challengeId: string, assignChallengeMatchDto: AssignChallengeMatchDto): Promise<void> {
+    this.logger.log('Vinculando partida...')
+
     const { date, winner, results } = assignChallengeMatchDto
     
     const challenge = await this.findById(challengeId)
@@ -117,7 +119,7 @@ export class ChallengesService {
       throw new RpcException('Uma partida já foi vinculada a este desafio')
     }
     
-    if (!challenge.players.map(({ id }) => id).includes(winner._id)) {
+    if (!challenge.players.includes(winner._id)) {
       throw new RpcException('Este jogador não faz parte do desafio')
     }
 
@@ -133,5 +135,7 @@ export class ChallengesService {
       status: ChallengeStatus.FINISHED,
       match,
     })
+    
+    this.logger.log('Partida vinculada com sucesso')
   }
 }

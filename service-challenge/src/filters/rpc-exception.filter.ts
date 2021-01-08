@@ -10,6 +10,8 @@ export class RpcExceptionFilter implements ExceptionFilter {
     const channel = ctx.getChannelRef()
     const message = ctx.getMessage()
 
+    this.logger.error(`Errro capturado => ${exception.message}`)
+
     await channel.ack(message)
   }
 }
