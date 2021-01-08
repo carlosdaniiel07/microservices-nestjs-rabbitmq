@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { ChallengeSchema } from './interfaces/challenges/challenge.schema';
 import { MatchSchema } from './interfaces/matches/match.schema';
 import { ChallengesService } from './services/challenges.service';
+import { ProxyService } from './services/proxy.service';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { ChallengesService } from './services/challenges.service';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('APP_CONNECTION_STRING'),
-        appname: 'Smart Ranking - ADMIN',
+        appname: 'Smart Ranking - CHALLENGE',
         useNewUrlParser: true,
         useCreateIndex: true,
         useUnifiedTopology: true,
@@ -26,6 +27,9 @@ import { ChallengesService } from './services/challenges.service';
     ])
   ],
   controllers: [AppController],
-  providers: [ChallengesService]
+  providers: [
+    ChallengesService,
+    ProxyService,
+  ]
 })
 export class AppModule {}

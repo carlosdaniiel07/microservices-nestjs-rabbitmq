@@ -30,6 +30,12 @@ export class AppController {
     return await this.categoriesService.findById(id)
   }
 
+  @MessagePattern('find-category-by-player')
+  async handleFindCategoryByPlayer(@Payload() player: Player, @Ctx() context: RmqContext): Promise<Category> {
+    await this.ackMessage(context)
+    return await this.categoriesService.findByPlayer(player)
+  }
+
   @EventPattern('create-category')
   async handleCreateCategory(@Payload() createCategoryDto: CreateCategoryDto, @Ctx() context: RmqContext): Promise<void> {
     await this.categoriesService.save(createCategoryDto)

@@ -6,11 +6,11 @@ export const ChallengeSchema = new Schema({
   status: String,
   requestDate: Date,
   responseDate: Date,
-  requester: { type: Schema.Types.ObjectId, ref: 'Player' },
+  requester: { type: Schema.Types.ObjectId },
   players: [
-    { type: Schema.Types.ObjectId, ref: 'Player' }
+    { type: Schema.Types.ObjectId }
   ],
-  match: { type: Schema.Types.ObjectId, ref: 'Match' }
+  match: { type: Schema.Types.ObjectId }
 }, {
   timestamps: true,
   collection: 'challenges'

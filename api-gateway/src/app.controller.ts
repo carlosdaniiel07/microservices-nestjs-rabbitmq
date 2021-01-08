@@ -1,8 +1,9 @@
-import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Post, Put, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Post, Put, Query, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Observable } from 'rxjs';
 import { CreateCategoryDto } from './dtos/categories/create-category.dto';
 import { UpdateCategoryDto } from './dtos/categories/update-category.dto';
+import { CreateChallengeDto } from './dtos/challenges/create-challenge.dto';
 import { CreatePlayerDto } from './dtos/players/create-player.dto';
 import { UpdatePlayerDto } from './dtos/players/update-player.dto';
 import { ProxyService } from './modules/proxy/proxy.service';
@@ -88,5 +89,21 @@ export class AppController {
     const updatePlayerDto: UpdatePlayerDto = { photo: fileUrl }
     
     this.proxyService.adminMicroservice.emit('update-player', { id, data: updatePlayerDto })
+  }
+
+  @Get('challenges')
+  findChallenges(@Query('player') player: string): Observable<any[]> {
+    return this.proxyService.challengeMicroservice.send('find-all-challenges', '')
+  }
+
+  @Get('challenges/:id')
+  findChallengeById(@Param('id', MongoIdValidationPipe) id: string): Observable<any> {
+    return this.proxyService.challengeMicroservice.send('find-challenge-by-id', id)
+  }
+
+  @Post('challenges')
+  @UsePipes(ValidationPipe)
+  createChallenge(@Body() createChallengeDto: CreateChallengeDto): void {
+    this.proxyService.challengeMicroservice.emit('create-challenge', createChallengeDto)
   }
 }
