@@ -42,12 +42,11 @@ export class ChallengesService {
   }
 
   async save(createChallengeDto: CreateChallengeDto): Promise<any> {
-    // this.logger.log(`Criando desafio => ${JSON.stringify(createChallengeDto)}`)
+    this.logger.log(`Criando desafio => ${JSON.stringify(createChallengeDto)}`)
 
     const requester = await this.proxyService.adminMicroservice.send<Player>('find-player-by-id', createChallengeDto.requester._id).toPromise()
     const players: Player[] = []
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for(const value of createChallengeDto.players.values()) {
       const player = await this.proxyService.adminMicroservice.send<Player>('find-player-by-id', value._id).toPromise()
       players.push(player)
