@@ -20,20 +20,26 @@ export class AppController {
 
   @MessagePattern('find-all-categories')
   async handleFindAllCategories(@Ctx() context: RmqContext): Promise<Category[]> {
+    const response = await this.categoriesService.findAll()
     await this.ackMessage(context)
-    return await this.categoriesService.findAll()
+
+    return response
   }
 
   @MessagePattern('find-category-by-id')
   async handleFindCategoryById(@Payload() id: string, @Ctx() context: RmqContext): Promise<Category> {
+    const response = await this.categoriesService.findById(id)
     await this.ackMessage(context)
-    return await this.categoriesService.findById(id)
+
+    return  response
   }
 
   @MessagePattern('find-category-by-player')
   async handleFindCategoryByPlayer(@Payload() player: Player, @Ctx() context: RmqContext): Promise<Category> {
+    const response = await this.categoriesService.findByPlayer(player)
     await this.ackMessage(context)
-    return await this.categoriesService.findByPlayer(player)
+
+    return response
   }
 
   @EventPattern('create-category')
@@ -56,14 +62,18 @@ export class AppController {
 
   @MessagePattern('find-all-players')
   async handleFindAllPlayers(@Ctx() context: RmqContext): Promise<Player[]> {
+    const response = await this.playersService.findAll()
     await this.ackMessage(context)
-    return await this.playersService.findAll()
+
+    return response
   }
 
   @MessagePattern('find-player-by-id')
   async handleFindPlayerById(@Payload() id: string, @Ctx() context: RmqContext): Promise<Player> {
+    const response = await this.playersService.findById(id)
     await this.ackMessage(context)
-    return await this.playersService.findById(id)
+
+    return response
   }
 
   @EventPattern('create-player')

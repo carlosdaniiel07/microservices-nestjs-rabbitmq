@@ -14,14 +14,18 @@ export class AppController {
 
   @MessagePattern('find-all-challenges')
   async handleFindAllChallenges(@Ctx() context: RmqContext): Promise<Challenge[]> {
+    const response = await this.challengeService.findAll()
     await this.ackMessage(context)
-    return await this.challengeService.findAll()
+
+    return response
   }
 
   @MessagePattern('find-challenge-by-id')
   async handleFindChallengeById(@Payload() id: string, @Ctx() context: RmqContext): Promise<Challenge> {
+    const response = await this.challengeService.findById(id)
     await this.ackMessage(context)
-    return await this.challengeService.findById(id)
+
+    return response
   }
 
   @EventPattern('create-challenge')
@@ -41,7 +45,6 @@ export class AppController {
     await this.challengeService.assignMatch(payload.id, payload.data)
     await this.ackMessage(context)
   }
-
 
   private async ackMessage(context: RmqContext): Promise<void> {
     const channel = context.getChannelRef()
