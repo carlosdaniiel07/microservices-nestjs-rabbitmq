@@ -31,6 +31,16 @@ export class CategoriesService {
     return category
   }
 
+  async findByName(name: string): Promise<Category> {
+    const category = await this.categoryModel.findOne({ name }).populate('players').exec()
+
+    if (!category) {
+      throw new RpcException('Categoria não encontrada')
+    }
+
+    return category
+  }
+
   async findByPlayer(player: Player): Promise<Category> {
     return await this.categoryModel.findOne({ players: { $in: [player] } })
   }

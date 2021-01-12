@@ -11,19 +11,21 @@ export class RankingService {
   private readonly logger = new Logger(RankingService.name)
 
   constructor(
-    @InjectModel('Ranking') private readonly rankingModel: Model<Ranking>, 
+    @InjectModel('Ranking') private readonly rankingModel: Model<Ranking>,
     private readonly proxyService: ProxyService,
-  ) {}
+  ) { }
 
-  async save(createRankingDto: CreateRankingDto): Promise<Ranking> {
-    if (!['+', '-'].includes(createRankingDto.operation)) {
-      throw new RpcException(`A operação ${createRankingDto.operation} não é válida`)
+  async save(createRankingDtos: CreateRankingDto[]): Promise<void> {
+    for (const createRankingDto of createRankingDtos.values()) {
+      if (!['+', '-'].includes(createRankingDto.operation)) {
+        throw new RpcException(`A operação ${createRankingDto.operation} não é válida`)
+      }
+
+      if (createRankingDto.points < 0) {
+        throw new RpcException('Pontos não podem ser negativos')
+      }
+
+      await new this.rankingModel(createRankingDto).save()
     }
-
-    if (createRankingDto.points < 0) {
-      throw new RpcException('Pontos não podem ser negativos')
-    }
-
-    return await new this.rankingModel(createRankingDto).save()
   }
 }

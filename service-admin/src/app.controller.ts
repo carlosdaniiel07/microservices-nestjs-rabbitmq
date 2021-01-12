@@ -31,7 +31,15 @@ export class AppController {
     const response = await this.categoriesService.findById(id)
     await this.ackMessage(context)
 
-    return  response
+    return response
+  }
+
+  @MessagePattern('find-category-by-name')
+  async handleFindCategoryByName(@Payload() name: string, @Ctx() context: RmqContext): Promise<Category> {
+    const response = await this.categoriesService.findByName(name)
+    await this.ackMessage(context)
+
+    return response
   }
 
   @MessagePattern('find-category-by-player')

@@ -1,4 +1,6 @@
 import { Controller, Logger } from '@nestjs/common';
+import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
+import { CreateRankingDto } from './dtos/ranking/create-ranking.dto';
 import { RankingService } from './services/ranking.service';
 
 @Controller()
@@ -8,4 +10,17 @@ export class AppController {
   constructor(
     private readonly service: RankingService
   ) {}
+
+  @EventPattern('create-rankings')
+  async handleSaveRanking(@Payload() createRankingDtos: CreateRankingDto[], @Ctx() context: RmqContext): Promise<void> {
+    await this.service.save(createRankingDtos)
+    await this.ackMessage(context)
+  }
+
+  private async ackMessage(context: RmqContext): Promise<void> {
+    const channel = context.getChannelRef()
+    const message = context.getMessage()
+
+    await channel.ack(message)
+  }
 }

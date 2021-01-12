@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { AssignChallengeMatchDto } from 'src/dtos/challenges/assign-challenge-match.dto';
 import { CreateChallengeDto } from 'src/dtos/challenges/create-challenge.dto';
 import { UpdateChallengeDto } from 'src/dtos/challenges/update-challenge.dto';
+import { CreateRankingDto } from 'src/dtos/ranking/create-ranking.dto';
 import { ChallengeStatus } from 'src/enums/challenge-status.enum';
 import { Category } from 'src/interfaces/categories/category.interface';
 import { Challenge } from 'src/interfaces/challenges/challenge.interface';
@@ -139,7 +140,23 @@ export class ChallengesService {
 
     this.logger.log('Gerando ranking...')
 
-    
+    const createRankingDtos: CreateRankingDto[] = []
+    const category = await this.proxyService.adminMicroservice.send('find-category-by-name', challenge.category).toPromise<Category>()
+
+    for(const player of challenge.players.values()) {
+      const isWinner = player.id == winner.id
+      const { name, operation, value } = category.events.find(event => event.name === (isWinner ? 'VITORIA' : 'DERROTA'))
+
+      createRankingDtos.push({
+        category: category.id,
+        player: player.id,
+        event: name,
+        operation,
+        points: value,
+      })
+    }
+
+    await this.proxyService.rankingMicroservice.emit('create-rankings', createRankingDtos).toPromise()
 
     this.logger.log('Ranking gerado com sucesso!')
   }
