@@ -136,5 +136,11 @@ export class ChallengesService {
     })
     
     this.logger.log('Partida vinculada com sucesso')
+
+    this.logger.log('Gerando ranking...')
+
+    
+
+    this.logger.log('Ranking gerado com sucesso!')
   }
 }
