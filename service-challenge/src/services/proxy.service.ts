@@ -17,7 +17,13 @@ export class ProxyService {
   }
 
   get rankingMicroservice(): ClientProxy {
-    return null
+    return ClientProxyFactory.create({
+      transport: Transport.RMQ,
+      options: {
+        urls: [this.configService.get<string>('RABBIT_MQ_CONNECTION_STRING')],
+        queue: 'ranking',
+      },
+    })
   }
 
   get notificationMicroservice(): ClientProxy {

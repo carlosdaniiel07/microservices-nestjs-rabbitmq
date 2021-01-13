@@ -144,12 +144,12 @@ export class ChallengesService {
     const category = await this.proxyService.adminMicroservice.send('find-category-by-name', challenge.category).toPromise<Category>()
 
     for(const player of challenge.players.values()) {
-      const isWinner = player.id == winner.id
+      const isWinner = player._id == winner._id
       const { name, operation, value } = category.events.find(event => event.name === (isWinner ? 'VITORIA' : 'DERROTA'))
 
       createRankingDtos.push({
-        category: category.id,
-        player: player.id,
+        category: category._id,
+        player: player._id,
         event: name,
         operation,
         points: value,
