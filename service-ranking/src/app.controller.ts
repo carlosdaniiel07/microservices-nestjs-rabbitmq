@@ -11,9 +11,9 @@ export class AppController {
     private readonly service: RankingService
   ) {}
 
-  @EventPattern('create-rankings')
-  async handleSaveRanking(@Payload() createRankingDtos: CreateRankingDto[], @Ctx() context: RmqContext): Promise<void> {
-    await this.service.save(createRankingDtos)
+  @EventPattern('create-ranking')
+  async handleSaveRanking(@Payload() matchId: string, @Ctx() context: RmqContext): Promise<void> {
+    await this.service.save(matchId)
     await this.ackMessage(context)
   }
 

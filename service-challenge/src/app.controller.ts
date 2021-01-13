@@ -4,6 +4,7 @@ import { AssignChallengeMatchDto } from './dtos/challenges/assign-challenge-matc
 import { CreateChallengeDto } from './dtos/challenges/create-challenge.dto';
 import { UpdateChallengeDto } from './dtos/challenges/update-challenge.dto';
 import { Challenge } from './interfaces/challenges/challenge.interface';
+import { Match } from './interfaces/matches/match.interface';
 import { ChallengesService } from './services/challenges.service';
 
 @Controller()
@@ -23,6 +24,14 @@ export class AppController {
   @MessagePattern('find-challenge-by-id')
   async handleFindChallengeById(@Payload() id: string, @Ctx() context: RmqContext): Promise<Challenge> {
     const response = await this.challengeService.findById(id)
+    await this.ackMessage(context)
+
+    return response
+  }
+
+  @MessagePattern('find-match-by-id')
+  async handleFindMatchById(@Payload() id: string, @Ctx() context: RmqContext): Promise<Match> {
+    const response = await this.challengeService.findMatchById(id)
     await this.ackMessage(context)
 
     return response

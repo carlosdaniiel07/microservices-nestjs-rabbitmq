@@ -5,7 +5,6 @@ import { Model } from 'mongoose';
 import { AssignChallengeMatchDto } from 'src/dtos/challenges/assign-challenge-match.dto';
 import { CreateChallengeDto } from 'src/dtos/challenges/create-challenge.dto';
 import { UpdateChallengeDto } from 'src/dtos/challenges/update-challenge.dto';
-import { CreateRankingDto } from 'src/dtos/ranking/create-ranking.dto';
 import { ChallengeStatus } from 'src/enums/challenge-status.enum';
 import { Category } from 'src/interfaces/categories/category.interface';
 import { Challenge } from 'src/interfaces/challenges/challenge.interface';
@@ -21,7 +20,7 @@ export class ChallengesService {
     @InjectModel('Challenge') private readonly challengeModel: Model<Challenge>,
     @InjectModel('Match') private readonly matchModel: Model<Match>,
     private readonly proxyService: ProxyService
-    ) {}
+  ) { }
 
   async findAll(): Promise<Challenge[]> {
     return await this.challengeModel.find().populate('match')
@@ -31,7 +30,7 @@ export class ChallengesService {
     const player = await this.proxyService.adminMicroservice.send<Player>('find-player-by-id', id).toPromise()
     return await this.challengeModel.find({ requester: player }).populate('match')
   }
-  
+
   async findById(id: string): Promise<Challenge> {
     const challenge = await this.challengeModel.findById(id).populate('match')
 
@@ -42,13 +41,23 @@ export class ChallengesService {
     return challenge
   }
 
+  async findMatchById(id: string): Promise<Match> {
+    const match = await this.matchModel.findById(id)
+
+    if (!match) {
+      throw new RpcException('Partida não encontrada')
+    }
+
+    return match
+  }
+
   async save(createChallengeDto: CreateChallengeDto): Promise<any> {
     this.logger.log(`Criando desafio => ${JSON.stringify(createChallengeDto)}`)
 
     const requester = await this.proxyService.adminMicroservice.send<Player>('find-player-by-id', createChallengeDto.requester._id).toPromise()
     const players: Player[] = []
 
-    for(const value of createChallengeDto.players.values()) {
+    for (const value of createChallengeDto.players.values()) {
       const player = await this.proxyService.adminMicroservice.send<Player>('find-player-by-id', value._id).toPromise()
       players.push(player)
     }
@@ -65,7 +74,7 @@ export class ChallengesService {
 
     const categories: Category[] = []
 
-    for(const value of players.values()) {
+    for (const value of players.values()) {
       const category = await this.proxyService.adminMicroservice.send<Category>('find-category-by-player', value).toPromise()
       categories.push(category)
     }
@@ -79,7 +88,7 @@ export class ChallengesService {
     if (firstCategory.id !== secondCategory.id) {
       throw new RpcException('Os jogadores precisam pertencer a mesma categoria')
     }
-    
+
     const createdChallenge = await new this.challengeModel({
       category: firstCategory.name,
       date: createChallengeDto.date,
@@ -112,13 +121,17 @@ export class ChallengesService {
     this.logger.log('Vinculando partida...')
 
     const { date, winner, results } = assignChallengeMatchDto
-    
+
     const challenge = await this.findById(challengeId)
 
     if (challenge.match) {
       throw new RpcException('Uma partida já foi vinculada a este desafio')
     }
-    
+
+    if (challenge.status !== ChallengeStatus.ACCEPTED) {
+      throw new RpcException('Uma partida não pode ser atribuida para este desafio')
+    }
+
     if (!challenge.players.includes(winner._id)) {
       throw new RpcException('Este jogador não faz parte do desafio')
     }
@@ -135,29 +148,9 @@ export class ChallengesService {
       status: ChallengeStatus.FINISHED,
       match,
     })
-    
+
     this.logger.log('Partida vinculada com sucesso')
 
-    this.logger.log('Gerando ranking...')
-
-    const createRankingDtos: CreateRankingDto[] = []
-    const category = await this.proxyService.adminMicroservice.send('find-category-by-name', challenge.category).toPromise<Category>()
-
-    for(const player of challenge.players.values()) {
-      const isWinner = player._id == winner._id
-      const { name, operation, value } = category.events.find(event => event.name === (isWinner ? 'VITORIA' : 'DERROTA'))
-
-      createRankingDtos.push({
-        category: category._id,
-        player: player._id,
-        event: name,
-        operation,
-        points: value,
-      })
-    }
-
-    await this.proxyService.rankingMicroservice.emit('create-rankings', createRankingDtos).toPromise()
-
-    this.logger.log('Ranking gerado com sucesso!')
+    this.proxyService.rankingMicroservice.emit('create-ranking', match._id)
   }
 }
