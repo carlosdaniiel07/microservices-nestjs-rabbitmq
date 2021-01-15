@@ -25,26 +25,17 @@ export class RankingService {
     const match = await this.proxyService.challengeMicroservice.send('find-match-by-id', matchId).toPromise<Match>()
     const category = await this.proxyService.adminMicroservice.send('find-category-by-name', match.category).toPromise<Category>()
 
-    const winnerPlayer = match.players.find(playerId => playerId === match.winner)
-    const defeatedPlayer = match.players.find(playerId => playerId !== winnerPlayer)
+    match.players.forEach(player => {
+      const isWinner = player === match.winner
+      const { name, operation, value } = category.events.find(({ name }) => name === (isWinner ? 'VITORIA' : 'DERROTA'))
 
-    const winnerEvent = category.events.find(({ name }) => name === 'VITORIA')
-    const defeatedEvent = category.events.find(({ name }) => name === 'DERROTA')
-
-    createRankingDtos.push({
-      category: category._id,
-      player: winnerPlayer,
-      event: winnerEvent.name,
-      operation: winnerEvent.operation,
-      points: winnerEvent.value,
-    })
-
-    createRankingDtos.push({
-      category: category._id,
-      player: defeatedPlayer,
-      event: defeatedEvent.name,
-      operation: defeatedEvent.operation,
-      points: defeatedEvent.value,
+      createRankingDtos.push({
+        category: category._id,
+        player: player,
+        event: name,
+        operation: operation,
+        points: value,
+      })
     })
 
     for(const createRankingDto of createRankingDtos.values()) {
