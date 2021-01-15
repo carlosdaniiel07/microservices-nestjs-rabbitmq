@@ -1,6 +1,6 @@
 import { Controller, Logger } from '@nestjs/common';
-import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
-import { CreateRankingDto } from './dtos/ranking/create-ranking.dto';
+import { Ctx, EventPattern, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
+import { GetRankingDto } from './dtos/ranking/get-ranking.dto';
 import { RankingService } from './services/ranking.service';
 
 @Controller()
@@ -15,6 +15,22 @@ export class AppController {
   async handleSaveRanking(@Payload() matchId: string, @Ctx() context: RmqContext): Promise<void> {
     await this.service.save(matchId)
     await this.ackMessage(context)
+  }
+
+  @MessagePattern('get-ranking')
+  async handleGetRanking(@Ctx() context: RmqContext): Promise<GetRankingDto[]> {
+    const data = await this.service.getRanking()
+    await this.ackMessage(context)
+    
+    return data
+  }
+
+  @MessagePattern('get-first-of-ranking')
+  async handleGetFirstOfRanking(@Ctx() context: RmqContext): Promise<GetRankingDto> {
+    const data = await this.service.getFirstOfRanking()
+    await this.ackMessage(context)
+
+    return data
   }
 
   private async ackMessage(context: RmqContext): Promise<void> {

@@ -3,6 +3,7 @@ import { RpcException } from "@nestjs/microservices";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { CreateRankingDto } from "src/dtos/ranking/create-ranking.dto";
+import { GetRankingDto } from "src/dtos/ranking/get-ranking.dto";
 import { Category } from "src/interfaces/categories/category.interface";
 import { Match } from "src/interfaces/matches/match.interface";
 import { Ranking } from "src/interfaces/ranking/ranking.interface";
@@ -16,6 +17,60 @@ export class RankingService {
     @InjectModel('Ranking') private readonly rankingModel: Model<Ranking>,
     private readonly proxyService: ProxyService,
   ) { }
+
+  async getRanking(): Promise<GetRankingDto[]> {
+    this.logger.log('Construindo o ranking...')
+
+    const ranking = await this.rankingModel.find()
+    const rankingResult: GetRankingDto[] = []
+    const players = new Set<string>(ranking.map(({ player }) => `${player}`))
+
+    players.forEach(player => {
+      let wins = 0
+      let defeats = 0
+      let totalPoints = 0
+
+      ranking.filter(ranking => `${ranking.player}` === player).forEach(x => {
+        const isWin = ['VITORIA', 'VITORIA_LIDER'].includes(x.event)
+
+        if (isWin) {
+          wins += 1
+          totalPoints += x.points
+        } else {
+          defeats += 1
+          totalPoints -= x.points
+        }
+      })
+
+      rankingResult.push({
+        player: player,
+        points: totalPoints,
+        history: {
+          wins: wins,
+          defeats: defeats,
+        },
+      })
+    })
+
+    const response: GetRankingDto[] = rankingResult.sort(this.sortRanking).map((ranking, index) => ({
+      position: index + 1,
+      ...ranking,
+    }))
+
+    this.logger.log('Ranking construído com sucesso!')
+
+    return response
+  }
+
+  async getFirstOfRanking(): Promise<GetRankingDto> {
+    const rankingResult = await this.getRanking()
+    
+    if (!rankingResult.length) {
+      return null
+    }
+
+    return rankingResult[0]
+  }
 
   async save(matchId: string): Promise<void> {
     this.logger.log('Gerando ranking...')
@@ -38,10 +93,21 @@ export class RankingService {
       })
     })
 
-    for(const createRankingDto of createRankingDtos.values()) {
+    for (const createRankingDto of createRankingDtos.values()) {
       await new this.rankingModel(createRankingDto).save()
     }
 
     this.logger.log('Ranking gerado com sucesso!')
+  }
+
+  private sortRanking(a: GetRankingDto, b: GetRankingDto): number {
+    const sortByWins = (a: GetRankingDto, b: GetRankingDto): number => {
+      const aWins = a.history.wins
+      const bWins = b.history.wins
+
+      return aWins > bWins ? -1 : aWins < bWins ? 1 : 0
+    }
+
+    return a.points > b.points ? -1 : a.points < b.points ? 1 : sortByWins(a, b)
   }
 }

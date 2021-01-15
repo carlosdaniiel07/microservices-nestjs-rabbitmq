@@ -121,4 +121,9 @@ export class AppController {
   assignMatch(@Param('id', MongoIdValidationPipe) id: string, @Body() assignChallengeMatchDto: AssignChallengeMatchDto): void {
     this.proxyService.challengeMicroservice.emit('assign-match-to-challenge', { id, data: assignChallengeMatchDto })
   }
+
+  @Get('rankings')
+  getRankings(): Observable<any[]> {
+    return this.proxyService.rankingMicroservice.send('get-ranking', '')
+  }
 }
