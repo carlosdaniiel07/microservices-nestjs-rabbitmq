@@ -27,6 +27,12 @@ export class ProxyService {
   }
 
   get notificationMicroservice(): ClientProxy {
-    return null
+    return ClientProxyFactory.create({
+      transport: Transport.RMQ,
+      options: {
+        urls: [this.configService.get<string>('RABBIT_MQ_CONNECTION_STRING')],
+        queue: 'notification',
+      },
+    })
   }
 }

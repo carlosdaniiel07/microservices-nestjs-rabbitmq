@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { AssignChallengeMatchDto } from 'src/dtos/challenges/assign-challenge-match.dto';
 import { CreateChallengeDto } from 'src/dtos/challenges/create-challenge.dto';
 import { UpdateChallengeDto } from 'src/dtos/challenges/update-challenge.dto';
+import { SendEmailDto } from 'src/dtos/notification/send-email.dto';
 import { ChallengeStatus } from 'src/enums/challenge-status.enum';
 import { Category } from 'src/interfaces/categories/category.interface';
 import { Challenge } from 'src/interfaces/challenges/challenge.interface';
@@ -99,6 +100,17 @@ export class ChallengesService {
     }).save()
 
     this.logger.log('Desafio criado com sucesso!')
+
+    const challengedPlayer = players.find(p => p._id !== requester._id)
+
+    await this.proxyService.notificationMicroservice.emit<any, SendEmailDto>('send-email', {
+      to: challengedPlayer.email,
+      subject: `O jogador ${requester.name.trim()} desafiou você para uma partida`,
+      content: `
+        Você foi desafiado pelo jogador ${requester.name.trim()} e tem exatamente 5 dias a partir de agora para aceitar ou negar o desafio.
+        Acesse o sistema através do login abaixo
+      `,
+    }).toPromise()
 
     return createdChallenge
   }
