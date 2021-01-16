@@ -18,10 +18,22 @@ export class RankingService {
     private readonly proxyService: ProxyService,
   ) { }
 
-  async getRanking(): Promise<GetRankingDto[]> {
+  async getRanking(categoryName: string, referenceDate = new Date()): Promise<GetRankingDto[]> {
     this.logger.log('Construindo o ranking...')
 
-    const ranking = await this.rankingModel.find()
+    const category = await this.proxyService.adminMicroservice.send('find-category-by-name', categoryName).toPromise<Category>()
+    
+    if (!category) {
+      throw new RpcException('Categoria não encontrada')
+    }
+
+    referenceDate = new Date(referenceDate)
+    referenceDate.setUTCHours(23)
+    referenceDate.setUTCMinutes(59)
+    referenceDate.setUTCSeconds(59)
+    referenceDate.setUTCMilliseconds(999)
+
+    const ranking = await this.rankingModel.find({ category: category._id, createdAt: { $lte: referenceDate } })
     const rankingResult: GetRankingDto[] = []
     const players = new Set<string>(ranking.map(({ player }) => `${player}`))
 
@@ -62,8 +74,8 @@ export class RankingService {
     return response
   }
 
-  async getFirstOfRanking(): Promise<GetRankingDto> {
-    const rankingResult = await this.getRanking()
+  async getFirstOfRanking(categoryName: string, referenceDate: Date): Promise<GetRankingDto> {
+    const rankingResult = await this.getRanking(categoryName, referenceDate)
     
     if (!rankingResult.length) {
       return null
@@ -86,6 +98,7 @@ export class RankingService {
 
       createRankingDtos.push({
         category: category._id,
+        match: match._id,
         player: player,
         event: name,
         operation: operation,

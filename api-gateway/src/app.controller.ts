@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Post, Put, Query, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { CreateCategoryDto } from './dtos/categories/create-category.dto';
 import { UpdateCategoryDto } from './dtos/categories/update-category.dto';
 import { AssignChallengeMatchDto } from './dtos/challenges/assign-challenge-match.dto';
@@ -123,7 +123,10 @@ export class AppController {
   }
 
   @Get('rankings')
-  getRankings(): Observable<any[]> {
-    return this.proxyService.rankingMicroservice.send('get-ranking', '')
+  getRankings(
+    @Query('category', ParamsValidationPipe) categoryName: string, 
+    @Query('date') referenceDate: Date
+  ): Observable<any[]> {
+    return this.proxyService.rankingMicroservice.send('get-ranking', { categoryName, referenceDate })
   }
 }

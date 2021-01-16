@@ -18,16 +18,16 @@ export class AppController {
   }
 
   @MessagePattern('get-ranking')
-  async handleGetRanking(@Ctx() context: RmqContext): Promise<GetRankingDto[]> {
-    const data = await this.service.getRanking()
+  async handleGetRanking(@Payload() payload: { categoryName: string, referenceDate: Date }, @Ctx() context: RmqContext): Promise<GetRankingDto[]> {
+    const data = await this.service.getRanking(payload.categoryName, payload.referenceDate)
     await this.ackMessage(context)
     
     return data
   }
 
   @MessagePattern('get-first-of-ranking')
-  async handleGetFirstOfRanking(@Ctx() context: RmqContext): Promise<GetRankingDto> {
-    const data = await this.service.getFirstOfRanking()
+  async handleGetFirstOfRanking(@Payload() payload: { categoryName: string, referenceDate: Date }, @Ctx() context: RmqContext): Promise<GetRankingDto> {
+    const data = await this.service.getFirstOfRanking(payload.categoryName, payload.referenceDate)
     await this.ackMessage(context)
 
     return data
