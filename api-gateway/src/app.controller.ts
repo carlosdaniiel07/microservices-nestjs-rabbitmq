@@ -1,6 +1,7 @@
-import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Post, Put, Query, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Post, Put, Query, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { CreateCategoryDto } from './dtos/categories/create-category.dto';
 import { UpdateCategoryDto } from './dtos/categories/update-category.dto';
 import { AssignChallengeMatchDto } from './dtos/challenges/assign-challenge-match.dto';
@@ -23,6 +24,7 @@ export class AppController {
   ) {}
 
   @Get('categories')
+  @UseGuards(AuthGuard('jwt'))
   findCategories(): Observable<any[]> {
     return this.proxyService.adminMicroservice.send('find-all-categories', '')
   }
