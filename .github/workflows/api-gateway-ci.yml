@@ -1,0 +1,46 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    - name: Install dependencies
+      working-directory: ./api-gateway
+      run: |
+        npm install
+        npm run build
+    
+    - name: Copy package.json to dist folder
+      working-directory: ./api-gateway
+      run: cp package.json dist
+
+    - name: Deploy app to Cloud Foundry (SAP Cloud)
+      uses: citizen-of-planet-earth/cf-cli-action@master
+      with:
+        cf_api: https://api.cf.us10.hana.ondemand.com
+        cf_username: ${{ secrets.CF_USER }}
+        cf_password: ${{ secrets.CF_PASSWORD }}
+        cf_org: ${{ secrets.CF_ORG }}
+        cf_space: dev
+        command: push -f api-gateway/manifest.yaml
+
