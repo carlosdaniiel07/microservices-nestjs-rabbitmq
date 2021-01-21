@@ -42,5 +42,5 @@ jobs:
         cf_password: ${{ secrets.CF_PASSWORD }}
         cf_org: ${{ secrets.CF_ORG }}
         cf_space: dev
-        command: push -f manifest.yml
+        command: push -f api-gateway/manifest.yml
 
