@@ -23,6 +23,11 @@ export class AppController {
     private readonly proxyService: ProxyService,
   ) {}
 
+  @Get('status')
+  getStatus(): { message: string } {
+    return { message: 'Back-end is running!' }
+  }
+
   @Get('categories')
   @UseGuards(AuthGuard('jwt'))
   findCategories(): Observable<any[]> {
