@@ -18,12 +18,29 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    
     - name: Install dependencies
       working-directory: ./api-gateway
       run: |
         npm install
         npm run build
+    
+    - name: Copy package.json to dist folder
+      working-directory: ./api-gateway
+      run: cp package.json dist
+
+    - name: Deploy app to Cloud Foundry (SAP Cloud)
+      uses: citizen-of-planet-earth/cf-cli-action@master
+      with:
+        cf_api: https://api.cf.us10.hana.ondemand.com
+        cf_username: ${{ secrets.CF_USER }}
+        cf_password: ${{ secrets.CF_PASSWORD }}
+        cf_org: ${{ secrets.CF_ORG }}
+        cf_space: dev
+        command: push -f manifest.yml
+
